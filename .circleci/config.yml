@@ -6,26 +6,41 @@ orbs:
   heroku: circleci/heroku@2.0
 
 jobs:
-  # build:
-  #   docker:
-  #     - image: cimg/node:16.10
-  #   steps:
-  #     - checkout
-  #     - node/install-packages:
-  #         pkg-manager: npm
-  #     - run: |
-  #         echo "Installing dependencies..."
-  #         npm install
-  # test:
-  #   docker:
-  #     - image: cimg/node:16.10
-  #   steps:
-  #     - checkout
-  #     - node/install-packages:
-  #         pkg-manager: npm
-  #     - run: |
-  #         echo "Running tests..."
-  #         npm run test
+  build:
+    # 1st way to use docker container in circleci
+    docker:
+      # specifying which image to use
+      - image: cimg/node:16.10
+    steps:
+      - checkout
+      - node/install-packages:
+          pkg-manager: npm
+      - run: |
+          echo "Installing dependencies..."
+          npm install
+  test:
+    docker:
+      - image: cimg/node:16.10
+    steps:
+      - checkout
+      - node/install-packages:
+          pkg-manager: npm
+      - run: |
+          echo "Running tests..."
+          npm run test
+  publish:
+    # 2nd way to use docker container in circleci
+    # refer to documentation on how to specify which image to use
+    # e.g. - image: cimg/node:16.10
+    executor: docker/docker
+    steps:
+      - setup_remote_docker
+      - checkout
+      - docker/check
+      - docker/build:
+          image: dexsjw/publish-assignment
+      - docker/push:
+          image: dexsjw/publish-assignment
   deploy:
     executor: heroku/default
     steps:
@@ -43,8 +58,13 @@ jobs:
 workflows:
   simple_workflow:
     jobs:
-      # - build
-      # - test:
-      #     requires:
-      #       - build
-      - deploy
+      - build
+      - test:
+          requires:
+            - build
+      - publish:
+          requires:
+            - test
+      - deploy:
+          requires:
+            - publish
