@@ -38,9 +38,9 @@ jobs:
       - checkout
       - docker/check
       - docker/build:
-          image: dexsjw/publish-assignment
+          image: dexsjw/publish-assignment:1.1.0.0
       - docker/push:
-          image: dexsjw/publish-assignment
+          image: dexsjw/publish-assignment:1.1.0.0
   deploy:
     executor: heroku/default
     steps:
