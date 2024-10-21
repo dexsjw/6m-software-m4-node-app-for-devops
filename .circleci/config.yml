@@ -39,8 +39,10 @@ jobs:
       - docker/check
       - docker/build:
           image: dexsjw/publish-assignment
+          tag: <<pipline.git.tag>>
       - docker/push:
           image: dexsjw/publish-assignment
+          tag: <<pipline.git.tag>>
   deploy:
     executor: heroku/default
     steps:
@@ -58,13 +60,29 @@ jobs:
 workflows:
   simple_workflow:
     jobs:
-      - build
+      - build:
+          filters:
+            branches:
+              only: 
+                - main
+                - release
       - test:
           requires:
             - build
+          filters:
+            branches:
+              only: 
+                - main
+                - release
       - publish:
-          requires:
-            - test
+          filters:
+            branches:
+              only: release
+            tags:
+              only: /v.*/
       - deploy:
-          requires:
-            - publish
+          filters:
+            branches:
+              only: release
+            tags:
+              only: /v.*/
