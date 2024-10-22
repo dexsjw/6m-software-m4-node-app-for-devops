@@ -4,7 +4,7 @@ orbs:
   node: circleci/node@5.0.1
   docker: circleci/docker@2.7.2
   heroku: circleci/heroku@2.0
-  snyk: snyk/snyk@1.5.0
+  # snyk: snyk/snyk@1.5.0
 
 jobs:
   build:
@@ -100,18 +100,18 @@ workflows:
               only: 
                 - main
                 - release
-      - publish:
-          filters:
-            branches:
-              only: release
-            tags:
-              only: /v.*/
-      - deploy:
-          filters:
-            branches:
-              only: release
-            tags:
-              only: /v.*/
+      # - publish:
+      #     filters:
+      #       branches:
+      #         only: release
+      #       tags:
+      #         only: /v.*/
+      # - deploy:
+      #     filters:
+      #       branches:
+      #         only: release
+      #       tags:
+      #         only: /v.*/
       # - scan:
       #     requires:
       #       - build
