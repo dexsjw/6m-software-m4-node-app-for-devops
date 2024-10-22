@@ -100,18 +100,18 @@ workflows:
               only: 
                 - main
                 - release
-      # - publish:
-      #     filters:
-      #       branches:
-      #         only: release
-      #       tags:
-      #         only: /v.*/
-      # - deploy:
-      #     filters:
-      #       branches:
-      #         only: release
-      #       tags:
-      #         only: /v.*/
+      - publish:
+          filters:
+            branches:
+              only: release
+            tags:
+              only: /v.*/
+      - deploy:
+          filters:
+            branches:
+              only: release
+            tags:
+              only: /v.*/
       # - scan:
       #     requires:
       #       - build
