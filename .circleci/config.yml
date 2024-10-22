@@ -105,13 +105,13 @@ workflows:
             branches:
               only: release
             tags:
-              only: /v.*/
+              only: /^v.*/
       - deploy:
           filters:
             branches:
               only: release
             tags:
-              only: /v.*/
+              only: /^v.*/
       # - scan:
       #     requires:
       #       - build
