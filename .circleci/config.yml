@@ -29,59 +29,59 @@ jobs:
       - run: |
           echo "Running tests..."
           npm run test
-  # publish:
-  #   # 2nd way to use docker container in circleci
-  #   # refer to documentation on how to specify which image to use
-  #   # e.g. - image: cimg/node:16.10
-  #   executor: docker/docker
+  publish:
+    # 2nd way to use docker container in circleci
+    # refer to documentation on how to specify which image to use
+    # e.g. - image: cimg/node:16.10
+    executor: docker/docker
+    steps:
+      - setup_remote_docker
+      - checkout
+      - docker/check
+      - docker/build:
+          image: dexsjw/publish-assignment
+          tag: <<pipeline.git.tag>>
+      - docker/push:
+          image: dexsjw/publish-assignment
+          tag: <<pipeline.git.tag>>
+  deploy:
+    executor: heroku/default
+    steps:
+      - setup_remote_docker
+      - heroku/install
+      - checkout
+      - run:
+          name: Heroku Container Push
+          command: |
+            heroku container:login
+            heroku stack:set container -a dex-su-devops
+            heroku container:push web -a dex-su-devops
+            heroku container:release web -a dex-su-devops
+  # scan:
+  #   docker:
+  #     - image: cimg/node:16.10
+  #   environment:
+  #     IMAGE_NAME: dexsjw/publish-assignment
   #   steps:
-  #     - setup_remote_docker
   #     - checkout
+  #     - setup_remote_docker
   #     - docker/check
-  #     - docker/build:
-  #         image: dexsjw/publish-assignment
-  #         tag: <<pipeline.git.tag>>
-  #     - docker/push:
-  #         image: dexsjw/publish-assignment
-  #         tag: <<pipeline.git.tag>>
-  # deploy:
-  #   executor: heroku/default
+  #     - run: docker build -t $IMAGE_NAME .
+  #     - snyk/scan:
+  #         docker-image-name: $IMAGE_NAME
+  # codescan:
+  #   docker:
+  #     - image: cimg/node:16.10
+  #   environment:
+  #     IMAGE_NAME: dexsjw/publish-assignment
   #   steps:
-  #     - setup_remote_docker
-  #     - heroku/install
   #     - checkout
-  #     - run:
-  #         name: Heroku Container Push
-  #         command: |
-  #           heroku container:login
-  #           heroku stack:set container -a dex-su-devops
-  #           heroku container:push web -a dex-su-devops
-  #           heroku container:release web -a dex-su-devops
-  scan:
-    docker:
-      - image: cimg/node:16.10
-    environment:
-      IMAGE_NAME: dexsjw/publish-assignment
-    steps:
-      - checkout
-      - setup_remote_docker
-      - docker/check
-      - run: docker build -t $IMAGE_NAME .
-      - snyk/scan:
-          docker-image-name: $IMAGE_NAME
-  codescan:
-    docker:
-      - image: cimg/node:16.10
-    environment:
-      IMAGE_NAME: dexsjw/publish-assignment
-    steps:
-      - checkout
-      - setup_remote_docker
-      - docker/check
-      - run: docker build -t $IMAGE_NAME .
-      - snyk/install
-      - run: |
-          snyk code test
+  #     - setup_remote_docker
+  #     - docker/check
+  #     - run: docker build -t $IMAGE_NAME .
+  #     - snyk/install
+  #     - run: |
+  #         snyk code test
 
 workflows:
   simple_workflow:
@@ -100,27 +100,27 @@ workflows:
               only: 
                 - main
                 - release
-      # - publish:
-      #     filters:
-      #       branches:
-      #         only: release
-      #       tags:
-      #         only: /v.*/
-      # - deploy:
-      #     filters:
-      #       branches:
-      #         only: release
-      #       tags:
-      #         only: /v.*/
-      - scan:
-          requires:
-            - build
+      - publish:
           filters:
             branches:
-              only: main
-      - codescan:
-          requires:
-            - build
+              only: release
+            tags:
+              only: /v.*/
+      - deploy:
           filters:
             branches:
-              only: main
+              only: release
+            tags:
+              only: /v.*/
+      # - scan:
+      #     requires:
+      #       - build
+      #     filters:
+      #       branches:
+      #         only: main
+      # - codescan:
+      #     requires:
+      #       - build
+      #     filters:
+      #       branches:
+      #         only: main
